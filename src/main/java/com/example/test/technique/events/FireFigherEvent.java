@@ -50,18 +50,8 @@ public class FireFigherEvent {
         int i = IntStream.range(0, users.size())
                 .filter(j -> lastFireFighter.getId().equals(users.get(j).getId()))
                 .findFirst().orElse(0);
-        User nextFireFighter;
-        while (true) {
-            i ++;
-            try {
-                if (!leaveService.getLeaveByUserId(users.get(i).getId()).isPresent()) {
-                    nextFireFighter = users.get(i);
-                    break;
-                }
-            } catch (Exception outOfBound) {
-                i = 0;
-            }
-        }
-        return nextFireFighter;
+        if (users.size()-1 == i) {
+            return users.get(0);
+        } else return users.get(i+1);
     }
 }
