@@ -22,6 +22,10 @@ public class FireFigherService {
         } else return Optional.ofNullable(fireFighers.get(0));
     }
 
+    public Optional<FireFigher> getFireFighter() {
+        return fireFigherRepository.findTop();
+    }
+
     public void deleteById(Long id) {
         fireFigherRepository.deleteById(id);
     }

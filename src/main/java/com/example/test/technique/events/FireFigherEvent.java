@@ -7,15 +7,17 @@ import com.example.test.technique.service.LeaveService;
 import com.example.test.technique.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-@Component
+
+
 @Slf4j
+@Service
 public class FireFigherEvent {
 
     private FireFigherService fireFigherService;
@@ -28,40 +30,38 @@ public class FireFigherEvent {
         this.userService = userService;
     }
 
-    @Scheduled(fixedRate = 50000)
+    @Scheduled(cron = "@daily")
     public void defineFireFigher () {
-        List<User> users = userService.getUsers("core quali");
-
-
-        Optional<Object> fireFigher = fireFigherService.getFireFigher();
-        if (!users.isEmpty()) {
-            if (fireFigher.isPresent()) {
-                FireFigher fireFigher1 = (FireFigher) fireFigher.get();
-                log.info("the new fireFighter: " + fireFigher1.toString());
-                for (int i = 0; i < users.size(); i++) {
-                    if (users.get(i).getId().equals(fireFigher1.getId())) {
-                        int j = i + 1;
-                        while (i != j) {
-                            if (j == users.size()) {
-                                j = 0;
-                            }
-                            if (addFireFighter(users, fireFigher1, j)) break;
-                            j++;
-                        }
-                    }
-                }
-            } else {
-                fireFigherService.addTheNewFireFigher(new FireFigher(users.get(4).getId(), users.get(4).getName()));
-            }
+        List<User> users = userService.getUsers("Core qualité");
+        Optional<FireFigher> fireFigher = fireFigherService.getFireFighter();
+        if (!fireFigher.isPresent()) {
+            fireFigherService.addTheNewFireFigher(FireFigher.builder().name(users.get(0).getName())
+                    .id(users.get(0).getId()).build());
+        } else {
+            User activeFireFigherUser = userService.findOne(fireFigher.get().getName());
+            User nextFireFigher = findNextFireFighter(users, activeFireFigherUser);
+            fireFigherService.deleteById(fireFigher.get().getId());
+            fireFigherService.addTheNewFireFigher(FireFigher.builder().name(nextFireFigher.getName())
+                    .id(nextFireFigher.getId()).build());
         }
     }
 
-    private boolean addFireFighter(List<User> users, FireFigher fireFigher1, int j) {
-        if (!leaveService.getLeaveByUserId(users.get(j).getId()).isPresent()) {
-            fireFigherService.deleteById(fireFigher1.getId());
-            fireFigherService.addTheNewFireFigher(new FireFigher(users.get(j).getId(), users.get(j).getName()));
-            return true;
+    private User findNextFireFighter(List<User> users, User lastFireFighter) {
+        int i = IntStream.range(0, users.size())
+                .filter(j -> lastFireFighter.getId().equals(users.get(j).getId()))
+                .findFirst().orElse(0);
+        User nextFireFighter;
+        while (true) {
+            i ++;
+            try {
+                if (!leaveService.getLeaveByUserId(users.get(i).getId()).isPresent()) {
+                    nextFireFighter = users.get(i);
+                    break;
+                }
+            } catch (Exception outOfBound) {
+                i = 0;
+            }
         }
-        return false;
+        return nextFireFighter;
     }
 }

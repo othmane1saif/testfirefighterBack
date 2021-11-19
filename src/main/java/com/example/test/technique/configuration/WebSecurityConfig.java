@@ -45,7 +45,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements W
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/**","/static/**","/users/authenticate", "/users/register", "/h2-console/**").permitAll()
+                .antMatchers("/**","/static/**","/users/authenticate",
+                        "/users/register",
+                        "/firefigher/update_day_fighter",
+                        "/h2-console/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

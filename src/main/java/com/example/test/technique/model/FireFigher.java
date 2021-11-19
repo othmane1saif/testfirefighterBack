@@ -1,9 +1,6 @@
 package com.example.test.technique.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,6 +8,7 @@ import javax.persistence.Id;
 @Entity
 @Data @AllArgsConstructor @NoArgsConstructor
 @ToString
+@Builder
 public class FireFigher {
     @Id
     private Long id;
