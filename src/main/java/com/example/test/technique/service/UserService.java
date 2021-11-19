@@ -52,8 +52,8 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public List<User> getUsers(String team) {
+        return userRepository.findAllByTeam(team);
     }
 
     public User findOne(String userName) {

@@ -30,17 +30,14 @@ public class FireFigherEvent {
 
     @Scheduled(fixedRate = 50000)
     public void defineFireFigher () {
-        List<User> users = userService.getUsers();
-        users = users.stream().filter(ele -> ele.getTeam().toLowerCase().
-                contains("core quali")).collect(Collectors.toList());
-        users.sort(Comparator.comparing(User::getName));
+        List<User> users = userService.getUsers("core quali");
+
 
         Optional<Object> fireFigher = fireFigherService.getFireFigher();
         if (!users.isEmpty()) {
             if (fireFigher.isPresent()) {
                 FireFigher fireFigher1 = (FireFigher) fireFigher.get();
                 log.info("the new fireFighter: " + fireFigher1.toString());
-                System.out.println();
                 for (int i = 0; i < users.size(); i++) {
                     if (users.get(i).getId().equals(fireFigher1.getId())) {
                         int j = i + 1;
@@ -48,11 +45,7 @@ public class FireFigherEvent {
                             if (j == users.size()) {
                                 j = 0;
                             }
-                            if (!leaveService.getLeaveByUserId(users.get(j).getId()).isPresent()) {
-                                fireFigherService.deleteById(fireFigher1.getId());
-                                fireFigherService.addTheNewFireFigher(new FireFigher(users.get(j).getId(), users.get(j).getName()));
-                                break;
-                            }
+                            if (addFireFighter(users, fireFigher1, j)) break;
                             j++;
                         }
                     }
@@ -61,5 +54,14 @@ public class FireFigherEvent {
                 fireFigherService.addTheNewFireFigher(new FireFigher(users.get(4).getId(), users.get(4).getName()));
             }
         }
+    }
+
+    private boolean addFireFighter(List<User> users, FireFigher fireFigher1, int j) {
+        if (!leaveService.getLeaveByUserId(users.get(j).getId()).isPresent()) {
+            fireFigherService.deleteById(fireFigher1.getId());
+            fireFigherService.addTheNewFireFigher(new FireFigher(users.get(j).getId(), users.get(j).getName()));
+            return true;
+        }
+        return false;
     }
 }
